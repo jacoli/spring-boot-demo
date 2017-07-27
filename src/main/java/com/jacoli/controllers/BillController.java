@@ -32,7 +32,7 @@ public class BillController {
     public String insert(long fee_cent, @RequestParam(defaultValue = "0") int type, String note, String category) {
         BillRecord record = new BillRecord();
         record.setUser_id(2);
-        record.setType(type == 0 ? BillType.Income : BillType.Expenditure);
+        record.setType(BillType.fromType(type));
         record.setFee_cent(fee_cent);
         record.setNote(note);
         record.setCategory(category);

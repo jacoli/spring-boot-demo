@@ -21,4 +21,8 @@ public enum BillType {
     public String getName() {
         return name;
     }
+
+    public static BillType fromType(int type) {
+        return type == 0 ? BillType.Income : BillType.Expenditure;
+    }
 }

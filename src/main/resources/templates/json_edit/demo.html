@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!-- 引入 Bootstrap -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body>
+<h1 th:text="${title}">Demo Page</h1>
+<div id="editor_holder"></div>
+<div id="result">put result here</div>
+<button id="submit">submit</button>
+<div id="response">response</div>
+
+<!-- jQuery (Bootstrap 的 JavaScript 插件需要引入 jQuery) -->
+<script src="https://code.jquery.com/jquery.js"></script>
+<!-- 包括所有已编译的插件 -->
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="/json-editor/json-editor.js"></script>
+
+<script th:inline="javascript">
+    JSONEditor.defaults.options.theme = 'bootstrap3';
+    var element = document.getElementById('editor_holder');
+
+    var schema = {
+        "title": "Person",
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "First and Last name",
+                "minLength": 4,
+                "default": "Jeremy Dorn"
+            },
+            "age": {
+                "type": "integer",
+                "default": 25,
+                "minimum": 18,
+                "maximum": 99
+            },
+            "favorite_color": {
+                "type": "string",
+                "format": "color",
+                "title": "favorite color",
+                "default": "#ffa500"
+            },
+            "gender": {
+                "type": "string",
+                "enum": [
+                    "male",
+                    "female"
+                ]
+            },
+            "location": {
+                "type": "object",
+                "title": "Location",
+                "properties": {
+                    "city": {
+                        "type": "string",
+                        "default": "San Francisco"
+                    },
+                    "state": {
+                        "type": "string",
+                        "default": "CA"
+                    },
+                    "citystate": {
+                        "type": "string",
+                        "description": "This is generated automatically from the previous two fields",
+                        "template": "{{city}}, {{state}}",
+                        "watch": {
+                            "city": "location.city",
+                            "state": "location.state"
+                        }
+                    }
+                }
+            },
+            "pets": {
+                "type": "array",
+                "format": "table",
+                "title": "Pets",
+                "uniqueItems": true,
+                "items": {
+                    "type": "object",
+                    "title": "Pet",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "cat",
+                                "dog",
+                                "bird",
+                                "reptile",
+                                "other"
+                            ],
+                            "default": "dog"
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "default": [
+                    {
+                        "type": "dog",
+                        "name": "Walter"
+                    }
+                ]
+            }
+        }
+    };
+
+    var editor = new JSONEditor(element, {
+        schema: schema
+    });
+
+    editor.on('change',function() {
+        document.getElementById('result').innerHTML = JSON.stringify(editor.getValue());
+    });
+
+    document.getElementById('submit').addEventListener('click',function() {
+        // Get the value from the editor
+        console.log(editor.getValue());
+        submit();
+    });
+
+    function submit() {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+            if (xmlhttp.readyState == 4) {
+                if (xmlhttp.status==200) {
+                    document.getElementById("response").innerHTML=xmlhttp.responseText;
+                }
+            }
+        }
+        xmlhttp.open("POST","/json_edit/submit", true);
+        xmlhttp.send(JSON.stringify(editor.getValue()));
+    }
+
+</script>
+
+</body>
+</html>
